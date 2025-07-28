@@ -30,7 +30,7 @@ initializeSocket(httpServer);
 app.use(
 	cors({
 		origin: process.env.NODE_ENV === "production"
-			? "https://jam-link.vercel.app/"
+			? "https://jam-link.vercel.app"
 			: "http://localhost:3000",
 		credentials: true,
 	})
