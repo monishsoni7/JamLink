@@ -42,13 +42,11 @@ const AlbumPage = () => {
 		<div className='h-full'>
 			<ScrollArea className='h-full w-full max-w-full overflow-x-hidden rounded-md'>
 				<div className='relative min-h-full'>
-					{/* Background Gradient */}
 					<div
 						className='absolute inset-0 bg-gradient-to-b from-[#5038a0]/80 via-zinc-900/80 to-zinc-900 pointer-events-none'
 						aria-hidden='true'
 					/>
 
-					{/* Main Content */}
 					<div className='relative z-10'>
 						<div className='flex flex-col sm:flex-row p-6 gap-4 sm:gap-6 pb-8 items-center sm:items-end text-center sm:text-left'>
 							<img
@@ -69,7 +67,6 @@ const AlbumPage = () => {
 							</div>
 						</div>
 
-						{/* Play Button */}
 						<div className='px-6 pb-4 flex items-center gap-6 justify-center sm:justify-start'>
 							<Button
 								onClick={handlePlayAlbum}
@@ -84,13 +81,11 @@ const AlbumPage = () => {
 							</Button>
 						</div>
 
-						{/* Song List Table */}
 						<div className='bg-black/20 backdrop-blur-sm'>
-							{/* Header - Hidden on mobile */}
-							<div className='hidden sm:grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-6 py-2 text-sm text-zinc-400 border-b border-white/5'>
+							{/* Header Row */}
+							<div className='hidden sm:grid grid-cols-[16px_4fr_1fr] gap-4 px-6 py-2 text-sm text-zinc-400 border-b border-white/5'>
 								<div>#</div>
 								<div>Title</div>
-								<div>Released Date</div>
 								<div>
 									<Clock className='h-4 w-4' />
 								</div>
@@ -105,9 +100,9 @@ const AlbumPage = () => {
 											<div
 												key={song._id}
 												onClick={() => handlePlaySong(index)}
-												className='grid sm:grid-cols-[16px_4fr_2fr_1fr] grid-cols-1 gap-2 sm:gap-4 px-4 py-2 text-sm text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer'
+												className='grid sm:grid-cols-[16px_4fr_1fr] grid-cols-1 gap-2 sm:gap-4 px-4 py-2 text-sm text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer'
 											>
-												{/* Index or Play Icon */}
+												{/* Index or Icon */}
 												<div className='flex items-center justify-start sm:justify-center'>
 													{isCurrentSong && isPlaying ? (
 														<div className='text-green-500'>♫</div>
@@ -117,7 +112,7 @@ const AlbumPage = () => {
 													{!isCurrentSong && <Play className='h-4 w-4 hidden group-hover:block' />}
 												</div>
 
-												{/* Title + Artist */}
+												{/* Song Details */}
 												<div className='flex gap-3 items-center'>
 													<img src={song.imageUrl} alt={song.title} className='w-10 h-10 rounded object-cover' />
 													<div>
@@ -126,11 +121,8 @@ const AlbumPage = () => {
 													</div>
 												</div>
 
-												{/* Release Date - hidden on mobile */}
-												<div className='hidden sm:flex items-center'>{song.releaseDate}</div>
-
-												{/* Duration - hidden on mobile */}
-												<div className='hidden sm:flex items-center'>{formatDuration(song.duration)}</div>
+												{/* Duration */}
+												<div className='flex items-center'>{formatDuration(song.duration)}</div>
 											</div>
 										);
 									})}
