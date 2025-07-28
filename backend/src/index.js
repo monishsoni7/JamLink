@@ -7,6 +7,7 @@ import cors from "cors";
 import fs from "fs";
 import { createServer } from "http";
 import cron from "node-cron";
+import morgan from "morgan";
 
 import { initializeSocket } from "./lib/socket.js";
 
@@ -32,6 +33,8 @@ const allowedOrigins = [
 	"https://jam-link.vercel.app"
 ];
 
+app.use(morgan("dev")); // Add request logging to help debug
+
 app.use(
 	cors({
 		origin: function(origin, callback) {
@@ -47,6 +50,15 @@ app.use(
 	})
 );
 
+// Add middleware to log response headers for debugging CORS
+app.use((req, res, next) => {
+	const send = res.send;
+	res.send = function (body) {
+		console.log("Response Headers:", res.getHeaders());
+		return send.call(this, body);
+	};
+	next();
+});
 
 app.use(express.json()); // to parse req.body
 app.use(clerkMiddleware()); // this will add auth to req obj => req.auth
