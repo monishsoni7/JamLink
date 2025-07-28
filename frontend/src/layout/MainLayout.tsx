@@ -5,13 +5,18 @@ import FriendsActivity from "./components/FriendsActivity";
 import AudioPlayer from "./components/AudioPlayer";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { useEffect, useState } from "react";
+import { Users, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const MainLayout = () => {
 	const [isMobile, setIsMobile] = useState(false);
+	const [showFriends, setShowFriends] = useState(false);
 
 	useEffect(() => {
 		const checkMobile = () => {
-			setIsMobile(window.innerWidth < 768);
+			const mobile = window.innerWidth < 768;
+			setIsMobile(mobile);
+			if (!mobile) setShowFriends(false);
 		};
 
 		checkMobile();
@@ -20,27 +25,68 @@ const MainLayout = () => {
 	}, []);
 
 	return (
-		<div className='h-screen bg-black text-white flex flex-col'>
+		<div className='h-screen bg-black text-white flex flex-col relative overflow-hidden'>
+			{/* Toggle Button for Mobile */}
+			{isMobile && (
+				<div className="fixed top-[70px] right-4 z-30">
+					<button
+						className='bg-zinc-800 hover:bg-zinc-700 p-2 rounded-full shadow-md transition'
+						onClick={() => setShowFriends(true)}
+					>
+						<Users className='w-5 h-5 text-white' />
+					</button>
+				</div>
+			)}
+
 			<ResizablePanelGroup direction='horizontal' className='flex-1 flex h-full overflow-hidden p-2'>
 				<AudioPlayer />
-				{/* left sidebar */}
-				<ResizablePanel defaultSize={20} minSize={isMobile ? 0 : 10} maxSize={30}>
-					<LeftSidebar />
-				</ResizablePanel>
+
+				{/* Left Sidebar */}
+				<ResizablePanel defaultSize={20} minSize={10} maxSize={30}>
+  <div className="h-full overflow-hidden">
+    <div className="h-full overflow-y-auto custom-scrollbar">
+      <LeftSidebar />
+    </div>
+  </div>
+</ResizablePanel>
+
 
 				<ResizableHandle className='w-2 bg-black rounded-lg transition-colors' />
 
-				{/* Main content */}
+				{/* Main Content */}
 				<ResizablePanel defaultSize={isMobile ? 80 : 60}>
-					<Outlet />
+					<div className='relative h-full overflow-hidden'>
+						<Outlet />
+
+						{/* Slide-in FriendsActivity for Mobile */}
+						{isMobile && (
+							<div
+								className={cn(
+									"absolute top-0 right-0 h-full w-[85%] bg-zinc-900 z-50 shadow-lg transition-transform duration-300",
+									showFriends ? "translate-x-0" : "translate-x-full"
+								)}
+							>
+								<div className='flex justify-end p-4'>
+									<button
+										className='bg-zinc-800 hover:bg-zinc-700 p-2 rounded-full'
+										onClick={() => setShowFriends(false)}
+									>
+										<X className='w-5 h-5 text-white' />
+									</button>
+								</div>
+								<div className='h-[calc(100%-56px)] px-2 pb-2 overflow-y-auto'>
+									<FriendsActivity />
+								</div>
+							</div>
+						)}
+					</div>
 				</ResizablePanel>
 
+				{/* Right Sidebar for Desktop */}
 				{!isMobile && (
 					<>
 						<ResizableHandle className='w-2 bg-black rounded-lg transition-colors' />
-
-						{/* right sidebar */}
-						<ResizablePanel defaultSize={20} minSize={0} maxSize={25} collapsedSize={0}>
+						<ResizablePanel defaultSize={20} minSize={0} maxSize={25}>
 							<FriendsActivity />
 						</ResizablePanel>
 					</>
@@ -51,4 +97,5 @@ const MainLayout = () => {
 		</div>
 	);
 };
+
 export default MainLayout;

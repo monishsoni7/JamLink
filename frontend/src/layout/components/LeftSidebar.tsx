@@ -15,12 +15,9 @@ const LeftSidebar = () => {
 		fetchAlbums();
 	}, [fetchAlbums]);
 
-	console.log({ albums });
-
 	return (
 		<div className='h-full flex flex-col gap-2'>
 			{/* Navigation menu */}
-
 			<div className='rounded-lg bg-zinc-900 p-4'>
 				<div className='space-y-2'>
 					<Link
@@ -79,9 +76,12 @@ const LeftSidebar = () => {
 										className='size-12 rounded-md flex-shrink-0 object-cover'
 									/>
 
-									<div className='flex-1 min-w-0 hidden md:block'>
-										<p className='font-medium truncate'>{album.title}</p>
-										<p className='text-sm text-zinc-400 truncate'>Album • {album.artist}</p>
+									{/* Show title on all screen sizes; hide artist on very small screens */}
+									<div className='flex-1 min-w-0'>
+										<p className='font-medium truncate text-sm sm:text-base'>{album.title}</p>
+										<p className='text-xs text-zinc-400 truncate hidden sm:block'>
+											Album • {album.artist}
+										</p>
 									</div>
 								</Link>
 							))
@@ -92,4 +92,5 @@ const LeftSidebar = () => {
 		</div>
 	);
 };
+
 export default LeftSidebar;

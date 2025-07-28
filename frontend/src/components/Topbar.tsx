@@ -1,18 +1,20 @@
 import { SignedOut, UserButton } from "@clerk/clerk-react";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import SignInOAuthButtons from "./SignInOAuthButtons";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { buttonVariants } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "usehooks-ts";
 
-const Topbar = () => {
+const Topbar = ({ onToggleFriends }: { onToggleFriends?: () => void }) => {
   const { isAdmin } = useAuthStore();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <div className="flex items-center justify-between p-4 sticky top-0 bg-zinc-900/75 backdrop-blur-md z-10">
+      {/* Left: Logo */}
       <div className="flex items-center gap-2">
-        {/* JamLink Icon + Text */}
         <div className="flex items-center gap-2">
           <svg
             width="32"
@@ -50,6 +52,7 @@ const Topbar = () => {
         </div>
       </div>
 
+      {/* Right: Admin, Friends Button, Profile */}
       <div className="flex items-center gap-4">
         {isAdmin && (
           <Link
@@ -59,6 +62,17 @@ const Topbar = () => {
             <LayoutDashboard className="size-4 mr-2" />
             Admin Dashboard
           </Link>
+        )}
+
+        {/* Toggle FriendsActivity on Mobile */}
+        {isMobile && onToggleFriends && (
+          <button
+            onClick={onToggleFriends}
+            className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition"
+            title="Friends Activity"
+          >
+            <Users className="w-5 h-5 text-white" />
+          </button>
         )}
 
         <SignedOut>
