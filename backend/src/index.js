@@ -76,6 +76,10 @@ if (process.env.NODE_ENV === "production") {
 		res.sendFile(path.resolve(__dirname, "../frontend", "dist", "index.html"));
 	});
 }
+// This handles root '/' when not in production (e.g., Render backend-only)
+app.get("/", (req, res) => {
+	res.send("JamLink API is running 🚀");
+});
 
 // error handler
 app.use((err, req, res, next) => {
