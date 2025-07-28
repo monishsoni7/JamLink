@@ -1,19 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Pause, Play, Repeat, Shuffle, SkipBack, SkipForward } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-const formatTime = (seconds: number) => {
-	const minutes = Math.floor(seconds / 60);
-	const remainingSeconds = Math.floor(seconds % 60);
-	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-};
 
 export const PlaybackControls = () => {
 	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
 
-	const [volume, setVolume] = useState(75);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
