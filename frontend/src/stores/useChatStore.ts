@@ -10,6 +10,8 @@ interface ChatStore {
 	socket: any;
 	isConnected: boolean;
 	onlineUsers: Set<string>;
+	onlineUsersWithTime: Map<string, number>;
+	signInTimes: Record<string, number>;
 	userActivities: Map<string, string>;
 	messages: Message[];
 	selectedUser: User | null;
@@ -24,7 +26,7 @@ interface ChatStore {
 
 const baseURL = import.meta.env.MODE === "development" ? "http://localhost:5000" : import.meta.env.VITE_API_BASE_URL;
 const socket = io(baseURL, {
-	autoConnect: false, // only connect if user is authenticated
+	autoConnect: false,
 	withCredentials: true,
 });
 
@@ -32,9 +34,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	users: [],
 	isLoading: false,
 	error: null,
-	socket: socket,
+	socket,
 	isConnected: false,
 	onlineUsers: new Set(),
+	onlineUsersWithTime: new Map(),
+	signInTimes: {},
 	userActivities: new Map(),
 	messages: [],
 	selectedUser: null,
@@ -45,7 +49,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axiosInstance.get("/users");
-			set({ users: response.data });
+			const users = response.data;
+			const signInTimesMap = new Map<string, number>();
+			users.forEach((user: any) => {
+				if (user.createdAt) {
+					signInTimesMap.set(user.clerkId, new Date(user.createdAt).getTime());
+				} else {
+					signInTimesMap.set(user.clerkId, 0);
+				}
+			});
+			const signInTimesObj: Record<string, number> = {};
+			signInTimesMap.forEach((value, key) => {
+				signInTimesObj[key] = value;
+			});
+			set({ users, signInTimes: signInTimesObj });
 		} catch (error: any) {
 			set({ error: error.response.data.message });
 		} finally {
@@ -69,40 +86,41 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			});
 
 			socket.on("user_connected", (userId: string) => {
-				set((state) => ({
-					onlineUsers: new Set([...state.onlineUsers, userId]),
-				}));
+				set((state) => {
+					const newOnlineUsers = new Set([...state.onlineUsers, userId]);
+					const newOnlineUsersWithTime = new Map(state.onlineUsersWithTime);
+					const newSignInTimes = { ...state.signInTimes };
+					if (!newOnlineUsersWithTime.has(userId)) {
+						newOnlineUsersWithTime.set(userId, Date.now());
+					}
+					if (!(userId in newSignInTimes)) {
+						newSignInTimes[userId] = Date.now();
+					}
+					return { onlineUsers: newOnlineUsers, onlineUsersWithTime: newOnlineUsersWithTime, signInTimes: newSignInTimes };
+				});
 			});
 
 			socket.on("user_disconnected", (userId: string) => {
 				set((state) => {
 					const newOnlineUsers = new Set(state.onlineUsers);
 					newOnlineUsers.delete(userId);
-					return { onlineUsers: newOnlineUsers };
+					const newOnlineUsersWithTime = new Map(state.onlineUsersWithTime);
+					newOnlineUsersWithTime.delete(userId);
+					return { onlineUsers: newOnlineUsers, onlineUsersWithTime: newOnlineUsersWithTime };
 				});
 			});
 
 			socket.on("receive_message", (message: Message) => {
 				const selectedUser = get().selectedUser;
-				if (
-					selectedUser &&
-					(message.senderId === selectedUser.clerkId || message.receiverId === selectedUser.clerkId)
-				) {
-					set((state) => ({
-						messages: [...state.messages, message],
-					}));
+				if (selectedUser && (message.senderId === selectedUser.clerkId || message.receiverId === selectedUser.clerkId)) {
+					set((state) => ({ messages: [...state.messages, message] }));
 				}
 			});
 
 			socket.on("message_sent", (message: Message) => {
 				const selectedUser = get().selectedUser;
-				if (
-					selectedUser &&
-					(message.senderId === selectedUser.clerkId || message.receiverId === selectedUser.clerkId)
-				) {
-					set((state) => ({
-						messages: [...state.messages, message],
-					}));
+				if (selectedUser && (message.senderId === selectedUser.clerkId || message.receiverId === selectedUser.clerkId)) {
+					set((state) => ({ messages: [...state.messages, message] }));
 				}
 			});
 
@@ -128,7 +146,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	sendMessage: async (receiverId, senderId, content) => {
 		const socket = get().socket;
 		if (!socket) return;
-
 		socket.emit("send_message", { receiverId, senderId, content });
 	},
 

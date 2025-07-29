@@ -6,12 +6,29 @@ import { HeadphonesIcon, Music, Users } from "lucide-react";
 import { useEffect } from "react";
 
 const FriendsActivity = () => {
-	const { users, fetchUsers, onlineUsers, userActivities } = useChatStore();
+	const { users, fetchUsers, onlineUsers, signInTimes: signInTimesObj, userActivities } = useChatStore();
 	const { user } = useUser();
 
 	useEffect(() => {
 		if (user) fetchUsers();
 	}, [fetchUsers, user]);
+
+	const sortedUsers = [...users].sort((a, b) => {
+		const aOnline = onlineUsers.has(a.clerkId);
+		const bOnline = onlineUsers.has(b.clerkId);
+
+		const aTime = signInTimesObj[a.clerkId] ?? 0;
+		const bTime = signInTimesObj[b.clerkId] ?? 0;
+
+		if (aOnline && bOnline) return bTime - aTime; // both online → latest first
+		if (aOnline) return -1; // a online, b offline → a first
+		if (bOnline) return 1; // b online, a offline → b first
+
+		// both offline → alphabetical
+		// both offline → sort by latest sign-in
+return (signInTimesObj[b.clerkId] ?? 0) - (signInTimesObj[a.clerkId] ?? 0);
+
+	});
 
 	return (
 		<div className='h-full bg-zinc-900 rounded-lg flex flex-col'>
@@ -26,7 +43,7 @@ const FriendsActivity = () => {
 
 			<ScrollArea className='flex-1'>
 				<div className='p-4 space-y-4'>
-					{users.map((user) => {
+					{sortedUsers.map((user) => {
 						const activity = userActivities.get(user.clerkId);
 						const isPlaying = activity && activity !== "Idle";
 
@@ -43,8 +60,7 @@ const FriendsActivity = () => {
 										</Avatar>
 										<div
 											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-zinc-900 
-												${onlineUsers.has(user.clerkId) ? "bg-green-500" : "bg-zinc-500"}
-												`}
+												${onlineUsers.has(user.clerkId) ? "bg-green-500" : "bg-zinc-500"}`}
 											aria-hidden='true'
 										/>
 									</div>
@@ -83,15 +99,13 @@ const LoginPrompt = () => (
 	<div className='h-full flex flex-col items-center justify-center p-6 text-center space-y-4'>
 		<div className='relative'>
 			<div
-				className='absolute -inset-1 bg-gradient-to-r from-emerald-500 to-sky-500 rounded-full blur-lg
-       opacity-75 animate-pulse'
+				className='absolute -inset-1 bg-gradient-to-r from-emerald-500 to-sky-500 rounded-full blur-lg opacity-75 animate-pulse'
 				aria-hidden='true'
 			/>
 			<div className='relative bg-zinc-900 rounded-full p-4'>
 				<HeadphonesIcon className='size-8 text-emerald-400' />
 			</div>
 		</div>
-
 		<div className='space-y-2 max-w-[250px]'>
 			<h3 className='text-lg font-semibold text-white'>See What Friends Are Playing</h3>
 			<p className='text-sm text-zinc-400'>Login to discover what music your friends are enjoying right now</p>
