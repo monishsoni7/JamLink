@@ -62,8 +62,8 @@ async function upsertUsers(users) {
     await User.findOneAndUpdate(
       { clerkId: clerkUser.id },
       {
-        fullName: clerkUser.fullName || "Unknown",
-        imageUrl: clerkUser.profileImageUrl || "",
+        fullName: (clerkUser.first_name || "") + " " + (clerkUser.last_name || "") || "Unknown",
+        imageUrl: clerkUser.profile_image_url || "",
         clerkId: clerkUser.id,
       },
       { upsert: true, new: true }
